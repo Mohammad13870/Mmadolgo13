@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Send Lock Pattern</title>
+  <title>Pattern Lock</title>
   <style>
     body {
       font-family: sans-serif;
@@ -12,55 +12,33 @@
       align-items: center;
       margin-top: 100px;
     }
-    input {
-      padding: 10px;
-      font-size: 16px;
-      width: 250px;
-      margin-bottom: 20px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #0088cc;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0077b3;
+    #patternContainer {
+      width: 300px;
+      height: 300px;
     }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pattern-lock-js@1.0.0/style.css" />
 </head>
 <body>
-  <h2>Enter Your Lock Pattern</h2>
-  <input type="text" id="patternInput" placeholder="e.g. ULDR or 12369" />
-  <button onclick="sendPattern()">Send to Telegram</button>
 
+  <h2>Enter Pattern</h2>
+  <div id="patternContainer"></div>
+  <p id="output"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/pattern-lock-js@1.0.0/patternLock.min.js"></script>
   <script>
-    function sendPattern() {
-      const pattern = document.getElementById("patternInput").value.trim();
-      if (!pattern) {
-        alert("Please enter a pattern.");
-        return;
+    const lock = new PatternLock("#patternContainer", {
+      onPattern: function(pattern) {
+        document.getElementById("output").innerText = "Pattern: " + pattern;
+        // اینجا می‌تونی چک کنی که آیا الگو درسته یا نه
+        if (pattern === "1235789") {
+          alert("الگو صحیح بود ✅");
+        } else {
+          alert("الگوی اشتباه ❌");
+        }
       }
-
-      const token = "5828170484:AAGx5Lbjc9ebQd0YuJ7l-REnXSUoS7OhjAc";
-      const chatId = "1353504783";
-      const message = `📱 Lock Pattern Entered: ${pattern}`;
-
-      const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
-
-      fetch(url)
-        .then(res => {
-          if (res.ok) {
-            alert("✅ Pattern sent to Telegram!");
-            document.getElementById("patternInput").value = "";
-          } else {
-            alert("❌ Failed to send pattern.");
-          }
-        })
-        .catch(() => alert("❌ Network error."));
-    }
+    });
   </script>
+
 </body>
 </html>
